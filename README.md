@@ -1,2 +1,2 @@
-# pharr-way-path-spanish
-Pharr Way Path Game: Spanish
+# pharr-way-path-game
+Interactive Board Game Based on the Pharr Way Journey

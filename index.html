@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The PHARR Way Path Game</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:Arial,sans-serif;background:#1a3a2a;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:16px;gap:14px;}
+.screen{width:100%;max-width:980px;display:none;}
+.screen.active{display:flex;flex-direction:column;align-items:center;gap:14px;}
+.setup-card{background:rgba(255,255,255,0.09);border-radius:18px;padding:22px 26px;width:100%;color:#fff;}
+.setup-card h2{font-size:19px;margin-bottom:14px;color:#FFD700;}
+.count-row{display:flex;align-items:center;gap:12px;}
+.count-btn{width:38px;height:38px;border-radius:50%;border:2px solid rgba(255,255,255,.3);background:rgba(255,255,255,.1);color:#fff;font-size:20px;font-weight:bold;cursor:pointer;transition:all .15s;}
+.count-btn:hover{background:rgba(255,255,255,.22);border-color:#FFD700;}
+.count-val{font-size:26px;font-weight:bold;color:#FFD700;min-width:30px;text-align:center;}
+.players-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px;width:100%;}
+.player-slot{background:rgba(255,255,255,.07);border-radius:14px;padding:14px;border:2px solid rgba(255,255,255,.12);}
+.player-slot h3{color:#fff;font-size:13px;margin-bottom:10px;opacity:.75;text-transform:uppercase;letter-spacing:.06em;}
+.char-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;}
+.char-opt{cursor:pointer;border-radius:10px;border:2px solid transparent;background:rgba(255,255,255,.06);transition:all .15s;overflow:hidden;position:relative;}
+.char-opt:hover{border-color:#FFD700;background:rgba(255,215,0,.1);}
+.char-opt.selected{border-color:#4CAF50;background:rgba(76,175,80,.18);}
+.char-opt.taken{opacity:.28;cursor:not-allowed;pointer-events:none;}
+.char-opt img{width:100%;aspect-ratio:.7;object-fit:contain;display:block;padding:4px 3px 1px;}
+.char-opt .cn{font-size:8.5px;text-align:center;color:rgba(255,255,255,.85);padding:2px 2px 5px;line-height:1.2;}
+.char-opt .ck{display:none;position:absolute;top:3px;right:3px;background:#4CAF50;border-radius:50%;width:15px;height:15px;font-size:9px;color:#fff;align-items:center;justify-content:center;}
+.char-opt.selected .ck{display:flex;}
+.btn-start{padding:13px 40px;background:#E8A020;color:#1a1a1a;border:none;border-radius:12px;font-size:17px;font-weight:bold;cursor:pointer;transition:opacity .15s,transform .1s;}
+.btn-start:hover{opacity:.88;}
+.btn-start:disabled{opacity:.3;cursor:not-allowed;}
+.board-wrap{position:relative;width:100%;max-width:980px;}
+.board-img{width:100%;border-radius:16px;box-shadow:0 8px 32px rgba(0,0,0,.55);display:block;}
+.token{position:absolute;transition:left .65s cubic-bezier(.34,1.56,.64,1),top .65s cubic-bezier(.34,1.56,.64,1);transform:translate(-50%,-100%);pointer-events:none;}
+.token img{display:block;filter:drop-shadow(0 4px 10px rgba(0,0,0,.5));}
+.token.bounce{animation:bnc .55s ease;}
+@keyframes bnc{0%{transform:translate(-50%,-100%) scale(1);}30%{transform:translate(-50%,-128%) scale(1.2);}65%{transform:translate(-50%,-94%) scale(.94);}100%{transform:translate(-50%,-100%) scale(1);}}
+.token.shake{animation:shk .42s ease;}
+@keyframes shk{0%,100%{transform:translate(-50%,-100%) rotate(0);}20%{transform:translate(-50%,-100%) rotate(-9deg);}40%{transform:translate(-50%,-100%) rotate(9deg);}60%{transform:translate(-50%,-100%) rotate(-5deg);}80%{transform:translate(-50%,-100%) rotate(5deg);}}
+.teams-row{display:flex;gap:8px;width:100%;max-width:980px;flex-wrap:wrap;}
+.team-card{flex:1;min-width:130px;background:rgba(255,255,255,.1);border-radius:12px;padding:10px 12px;border:2px solid transparent;transition:border-color .3s,background .3s;}
+.team-card.finished{border-color:#4CAF50;background:rgba(76,175,80,.2);}
+.team-card.wrong-flash{animation:wflash .4s ease;}
+@keyframes wflash{0%,100%{background:rgba(255,255,255,.1);}50%{background:rgba(229,57,53,.28);}}
+.tthumb{display:flex;align-items:center;gap:8px;}
+.tthumb img{width:52px;height:52px;object-fit:contain;filter:drop-shadow(0 2px 4px rgba(0,0,0,.4));}
+.tname{color:#fff;font-size:13px;font-weight:bold;}
+.tpos{color:rgba(255,255,255,.6);font-size:11px;margin-top:2px;}
+.tbtns{display:flex;gap:5px;margin-top:8px;}
+.bc{background:#4CAF50;color:#fff;border:none;border-radius:8px;padding:6px 11px;font-size:12px;font-weight:bold;cursor:pointer;}
+.bc:hover{opacity:.85;}
+.bw{background:#e53935;color:#fff;border:none;border-radius:8px;padding:6px 11px;font-size:12px;font-weight:bold;cursor:pointer;}
+.bw:hover{opacity:.85;}
+.bc:disabled,.bw:disabled{opacity:.28;cursor:not-allowed;}
+.q-panel{width:100%;max-width:980px;background:#1B3A6B;border-radius:14px;padding:18px 22px;color:#fff;box-shadow:0 4px 16px rgba(0,0,0,.4);}
+.qlbl{font-size:11px;letter-spacing:.1em;text-transform:uppercase;opacity:.55;margin-bottom:3px;}
+.qnum{font-size:13px;opacity:.5;margin-bottom:4px;}
+.qtxt{font-size:19px;font-weight:bold;line-height:1.55;}
+.qans{font-size:15px;background:rgba(255,255,255,.1);border-radius:8px;padding:8px 12px;line-height:1.5;margin-top:10px;display:none;}
+.qbtns{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;}
+.btn-reveal{background:rgba(255,255,255,.18);color:#fff;border:none;border-radius:10px;padding:10px 18px;font-size:14px;cursor:pointer;}
+.btn-reveal:hover{background:rgba(255,255,255,.28);}
+.btn-next{background:#E8A020;color:#1a1a1a;border:none;border-radius:10px;padding:10px 26px;font-size:15px;font-weight:bold;cursor:pointer;}
+.btn-next:hover{opacity:.88;}
+.btn-back{background:rgba(255,255,255,.1);color:#fff;border:none;border-radius:10px;padding:10px 18px;font-size:13px;cursor:pointer;}
+.btn-back:hover{background:rgba(255,255,255,.2);}
+.prog{height:5px;background:rgba(255,255,255,.12);border-radius:3px;margin-top:12px;}
+.progf{height:100%;background:#E8A020;border-radius:3px;transition:width .4s;}
+.win-banner{display:none;width:100%;max-width:980px;background:linear-gradient(135deg,#E8A020,#FFD700);border-radius:16px;padding:24px;text-align:center;}
+.win-banner h2{font-size:28px;color:#1B3A6B;}
+.win-banner p{font-size:15px;color:#1B3A6B;font-weight:500;margin-top:6px;}
+.win-chars{display:flex;justify-content:center;gap:8px;margin:12px 0;flex-wrap:wrap;}
+.win-chars img{width:90px;height:90px;object-fit:contain;filter:drop-shadow(0 3px 6px rgba(0,0,0,.3));}
+</style>
+</head>
+<body>
+
+<div class="screen active" id="sSetup">
+  <h1 style="color:#fff;font-size:28px;text-shadow:0 2px 8px rgba(0,0,0,.5);">
+    🏙️ The PHARR Way Path Game
+  </h1>
+  <div class="setup-card">
+    <h2>How many players?</h2>
+    <div class="count-row">
+      <button class="count-btn" onclick="chgCount(-1)">−</button>
+      <span class="count-val" id="cntVal">2</span>
+      <button class="count-btn" onclick="chgCount(1)">+</button>
+      <span style="font-size:13px;opacity:.55;margin-left:4px;">2 – 8 players</span>
+    </div>
+  </div>
+  <div class="setup-card">
+    <h2>Choose your characters</h2>
+    <p style="font-size:13px;opacity:.6;margin-bottom:14px;">Each player picks one — no duplicates allowed.</p>
+    <div class="players-grid" id="playersGrid"></div>
+  </div>
+  <button class="btn-start" id="btnStart" disabled onclick="startGame()">Start Game →</button>
+</div>
+
+<div class="screen" id="sGame">
+  <h1 style="color:#fff;font-size:22px;">🏙️ The PHARR Way Path Game</h1>
+  <div class="board-wrap" id="boardWrap">
+    <img class="board-img" src="https://torres1030.github.io/pharr-way-path-game/Pharr%20Way%20Board%20Game%20Map.png" alt="The PHARR Way game board">
+  </div>
+  <div class="teams-row" id="teamsRow"></div>
+  <div class="q-panel">
+    <div class="qlbl">Current Question</div>
+    <div class="qnum" id="qNum">Question 1 of 12</div>
+    <div class="qtxt" id="qTxt"></div>
+    <div class="qans" id="qAns"></div>
+    <div class="qbtns">
+      <button class="btn-reveal" onclick="revealAns()">Show Answer Key</button>
+      <button class="btn-next"   onclick="nextQ()">Next Question →</button>
+      <button class="btn-back"   onclick="goSetup()">↩ New Game</button>
+    </div>
+    <div class="prog"><div class="progf" id="progF" style="width:0%"></div></div>
+  </div>
+  <div class="win-banner" id="winBanner">
+    <h2>🏆 We Have a Winner!</h2>
+    <div class="win-chars" id="winChars"></div>
+    <p id="winTxt"></p>
+    <p style="margin-top:10px;font-size:13px;opacity:.8;">"When one team wins — <strong>WE ALL WIN</strong>. That is the Pharr Way."</p>
+    <button class="btn-next" style="margin-top:14px;" onclick="goSetup()">Play Again</button>
+  </div>
+</div>
+
+<script>
+const BASE = 'https://torres1030.github.io/pharr-way-path-game/';
+
+const CHARS = [
+  { id:'sparky', name:'Sparky', role:'Fire Dept.',        img: BASE + 'Sparky%20Dog.png'       },
+  { id:'ash',    name:'Ash',    role:'Fire Dept.',        img: BASE + 'Sparky%20Recolor.png'   },
+  { id:'penny',  name:'Penny',  role:'Finance',           img: BASE + 'Penny%20Pig.png'        },
+  { id:'pearl',  name:'Pearl',  role:'Finance',           img: BASE + 'Penny%20Recolor.png'    },
+  { id:'cody',   name:'Cody',   role:'Building and Code', img: BASE + 'Cody%20Raccoon.png'     },
+  { id:'buddy',  name:'Buddy',  role:'Building and Code', img: BASE + 'Cody%20Recolor.png'     },
+  { id:'ozzy',   name:'Ozzy',   role:'OSE',               img: BASE + 'Ozzy%20OSE%20Ocelot.png'},
+  { id:'track',  name:'Track',  role:'OSE',               img: BASE + 'Ozzy%20Recolor.png'     },
+];
+
+const WAYPOINTS = [
+  [51,95],[30,83],[16,68],[16,48],[20,28],[36,17],
+  [51,22],[66,13],[83,18],[88,35],[86,54],[83,72],
+];
+const TOTAL = WAYPOINTS.length - 1;
+const OFFSETS = [[-26,-2],[26,-2],[-10,-20],[10,-20],[-28,-18],[28,-18],[0,-30],[0,-8]];
+
+const Qs = [
+  { q:"What are the Three P's?",                                          a:"People, Process, and Performance" },
+  { q:"How do we improve our processes?",                                 a:"STEP" },
+  { q:"What is the City of Pharr's Mission?",                             a:"To provide the highest level of municipal services every day." },
+  { q:"What is the City of Pharr's Vision?",                              a:"The City of Pharr will consistently lead the region in municipal excellence, sustainability, and innovation." },
+  { q:"What does the P in PRIDE stand for?",                              a:"Professionalism" },
+  { q:"What does the I in PRIDE stand for?",                              a:"Integrity" },
+  { q:"What does the E in PRIDE stand for?",                              a:"Ethics" },
+  { q:"What does the S in STEP stand for?",                               a:"Study the problem" },
+  { q:"What does the P in STEP stand for?",                               a:"Propose solutions" },
+  { q:"Who are the City's Key Customers?",                                a:"Residents" },
+  { q:"In one word, what does 'Team Pharr' represent in the workplace?",  a:"Teamwork. Collaboration. Unity" },
+  { q:"What is our commitment?",                                          a:"Excellence Every Day" },
+];
+
+let numP=2, sel={}, positions=[], answered=[], curQ=0, gameOver=false, active=[];
+
+function chgCount(d){
+  numP=Math.min(8,Math.max(2,numP+d));
+  document.getElementById('cntVal').textContent=numP;
+  sel={};buildGrid();checkStart();
+}
+
+function buildGrid(){
+  const g=document.getElementById('playersGrid');g.innerHTML='';
+  for(let p=0;p<numP;p++){
+    const s=document.createElement('div');s.className='player-slot';
+    s.innerHTML=`<h3>Player ${p+1}</h3><div class="char-grid" id="cg${p}"></div>`;
+    g.appendChild(s);buildPicker(p);
+  }
+}
+
+function buildPicker(p){
+  const cg=document.getElementById('cg'+p);cg.innerHTML='';
+  CHARS.forEach(c=>{
+    const takenBy=Object.entries(sel).find(([k,v])=>v===c.id&&parseInt(k)!==p);
+    const picked=sel[p]===c.id;
+    const d=document.createElement('div');
+    d.className='char-opt'+(picked?' selected':'')+(takenBy?' taken':'');
+    d.innerHTML=`<img src="${c.img}" alt="${c.name}"><div class="cn">${c.name}</div><div class="ck">✓</div>`;
+    d.onclick=()=>pickChar(p,c.id);
+    cg.appendChild(d);
+  });
+}
+
+function pickChar(p,id){ sel[p]===id?delete sel[p]:(sel[p]=id); for(let i=0;i<numP;i++)buildPicker(i); checkStart(); }
+
+function checkStart(){
+  const ok=Object.keys(sel).length===numP&&new Set(Object.values(sel)).size===numP;
+  document.getElementById('btnStart').disabled=!ok;
+}
+
+function startGame(){
+  active=[];
+  for(let p=0;p<numP;p++) active.push({...CHARS.find(c=>c.id===sel[p]),pNum:p+1});
+  positions=new Array(numP).fill(0);
+  answered=new Array(numP).fill(false);
+  curQ=0;gameOver=false;
+  document.getElementById('sSetup').classList.remove('active');
+  document.getElementById('sGame').classList.add('active');
+  document.getElementById('winBanner').style.display='none';
+  buildTokens();buildCards();renderQ();
+}
+
+function tokenSize(){ const bw=document.getElementById('boardWrap').offsetWidth; return Math.max(60,Math.min(100,Math.floor(bw/9))); }
+
+function buildTokens(){
+  const wrap=document.getElementById('boardWrap');
+  wrap.querySelectorAll('.token').forEach(t=>t.remove());
+  const sz=tokenSize();
+  active.forEach((_,i)=>{
+    const d=document.createElement('div');d.className='token';d.id='tok'+i;
+    d.innerHTML=`<img src="${active[i].img}" style="width:${sz}px;height:${sz}px;" alt="${active[i].name}">`;
+    wrap.appendChild(d);
+  });
+  setTimeout(()=>active.forEach((_,i)=>placeToken(i)),120);
+  window.onresize=()=>{
+    const s=tokenSize();
+    active.forEach((_,i)=>{
+      const t=document.getElementById('tok'+i);
+      if(t){t.querySelector('img').style.width=s+'px';t.querySelector('img').style.height=s+'px';}
+      placeToken(i);
+    });
+  };
+}
+
+function placeToken(i){
+  const wrap=document.getElementById('boardWrap');
+  const bw=wrap.offsetWidth;
+  const bh=wrap.querySelector('img').offsetHeight||bw*(1333/2000);
+  const[wx,wy]=WAYPOINTS[positions[i]];
+  const[ox,oy]=OFFSETS[i]||[0,0];
+  const t=document.getElementById('tok'+i);if(!t)return;
+  t.style.left=(bw*wx/100+ox)+'px';
+  t.style.top=(bh*wy/100+oy)+'px';
+}
+
+function buildCards(){
+  const row=document.getElementById('teamsRow');row.innerHTML='';
+  active.forEach((p,i)=>{
+    const c=document.createElement('div');c.className='team-card';c.id='card'+i;
+    c.innerHTML=`
+      <div class="tthumb">
+        <img src="${p.img}" alt="${p.name}">
+        <div><div class="tname">${p.name}</div><div class="tpos" id="pos${i}">Square 0 / ${TOTAL}</div></div>
+      </div>
+      <div class="tbtns">
+        <button class="bc" id="bc${i}" onclick="mark(${i},true)">✓ Correct</button>
+        <button class="bw" id="bw${i}" onclick="mark(${i},false)">✗ Wrong</button>
+      </div>`;
+    row.appendChild(c);
+  });
+}
+
+function mark(i,correct){
+  if(answered[i]||gameOver)return;
+  answered[i]=true;
+  const tok=document.getElementById('tok'+i);
+  const card=document.getElementById('card'+i);
+  if(correct&&positions[i]<TOTAL){
+    positions[i]++;
+    tok.classList.remove('shake');void tok.offsetWidth;tok.classList.add('bounce');
+    setTimeout(()=>{tok.classList.remove('bounce');placeToken(i);},80);
+    setTimeout(()=>placeToken(i),700);
+  } else if(!correct){
+    tok.classList.add('shake');card.classList.add('wrong-flash');
+    setTimeout(()=>{tok.classList.remove('shake');card.classList.remove('wrong-flash');},500);
+  }
+  document.getElementById('bc'+i).disabled=true;
+  document.getElementById('bw'+i).disabled=true;
+  const fin=positions[i]>=TOTAL;
+  document.getElementById('pos'+i).textContent=fin?'🏆 Finished!':`Square ${positions[i]} / ${TOTAL}`;
+  if(fin){card.classList.add('finished');if(!gameOver){gameOver=true;setTimeout(()=>showWin([i]),500);}}
+}
+
+function showWin(ws){
+  const b=document.getElementById('winBanner');
+  document.getElementById('winChars').innerHTML=ws.map(i=>`<img src="${active[i].img}" alt="${active[i].name}">`).join('');
+  document.getElementById('winTxt').textContent=`🎉 ${ws.map(i=>active[i].name).join(' & ')} reached the finish line! Congratulations!`;
+  b.style.display='block';b.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function renderQ(){
+  if(curQ>=Qs.length){
+    document.getElementById('qTxt').textContent='All questions used! Check the final standings.';
+    document.getElementById('qAns').style.display='none';
+    document.getElementById('progF').style.width='100%';
+    if(!gameOver){const mx=Math.max(...positions);showWin(active.map((_,i)=>i).filter(i=>positions[i]===mx));}
+    return;
+  }
+  const q=Qs[curQ];
+  document.getElementById('qNum').textContent=`Question ${curQ+1} of ${Qs.length}`;
+  document.getElementById('qTxt').textContent=q.q;
+  document.getElementById('qAns').textContent=q.a;
+  document.getElementById('qAns').style.display='none';
+  document.getElementById('progF').style.width=(curQ/Qs.length*100)+'%';
+  answered=active.map((_,i)=>positions[i]>=TOTAL);
+  active.forEach((_,i)=>{const f=positions[i]>=TOTAL;document.getElementById('bc'+i).disabled=f;document.getElementById('bw'+i).disabled=f;});
+}
+
+function revealAns(){document.getElementById('qAns').style.display='block';}
+function nextQ(){if(!gameOver){curQ++;renderQ();}}
+function goSetup(){
+  document.getElementById('sGame').classList.remove('active');
+  document.getElementById('sSetup').classList.add('active');
+  sel={};buildGrid();checkStart();
+}
+
+buildGrid();
+</script>
+</body>
+</html>
