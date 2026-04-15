@@ -172,7 +172,7 @@ function buildGrid(){
   const g=document.getElementById('playersGrid');g.innerHTML='';
   for(let p=0;p<numP;p++){
     const s=document.createElement('div');s.className='player-slot';
-    s.innerHTML=`<h3>Player ${p+1}</h3><div class="char-grid" id="cg${p}"></div>`;
+    s.innerHTML=`<h3>Jugador ${p+1}</h3><div class="char-grid" id="cg${p}"></div>`;
     g.appendChild(s);buildPicker(p);
   }
 }
@@ -252,8 +252,8 @@ function buildCards(){
         <div><div class="tname">${p.name}</div><div class="tpos" id="pos${i}">Square 0 / ${TOTAL}</div></div>
       </div>
       <div class="tbtns">
-        <button class="bc" id="bc${i}" onclick="mark(${i},true)">✓ Correct</button>
-        <button class="bw" id="bw${i}" onclick="mark(${i},false)">✗ Wrong</button>
+        <button class="bc" id="bc${i}" onclick="mark(${i},true)">✓ Correcto</button>
+        <button class="bw" id="bw${i}" onclick="mark(${i},false)">✗ Incorrecto</button>
       </div>`;
     row.appendChild(c);
   });
