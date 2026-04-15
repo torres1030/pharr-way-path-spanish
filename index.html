@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>The PHARR Way Path Game</title>
+<title>Juego Manera Pharr</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:Arial,sans-serif;background:#1a3a2a;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:16px;gap:14px;}
@@ -78,49 +78,49 @@ body{font-family:Arial,sans-serif;background:#1a3a2a;min-height:100vh;display:fl
 
 <div class="screen active" id="sSetup">
   <h1 style="color:#fff;font-size:28px;text-shadow:0 2px 8px rgba(0,0,0,.5);">
-    🏙️ The PHARR Way Path Game
+    🏙️ El Juego Manera Pharr
   </h1>
   <div class="setup-card">
-    <h2>How many players?</h2>
+    <h2>Cuantos jugadores?</h2>
     <div class="count-row">
       <button class="count-btn" onclick="chgCount(-1)">−</button>
       <span class="count-val" id="cntVal">2</span>
       <button class="count-btn" onclick="chgCount(1)">+</button>
-      <span style="font-size:13px;opacity:.55;margin-left:4px;">2 – 8 players</span>
+      <span style="font-size:13px;opacity:.55;margin-left:4px;">2 – 8 jugadores</span>
     </div>
   </div>
   <div class="setup-card">
-    <h2>Choose your characters</h2>
-    <p style="font-size:13px;opacity:.6;margin-bottom:14px;">Each player picks one — no duplicates allowed.</p>
+    <h2>Selecciona tu personaje</h2>
+    <p style="font-size:13px;opacity:.6;margin-bottom:14px;">Cada jugador elige uno</p>
     <div class="players-grid" id="playersGrid"></div>
   </div>
-  <button class="btn-start" id="btnStart" disabled onclick="startGame()">Start Game →</button>
+  <button class="btn-start" id="btnStart" disabled onclick="startGame()">Empieza →</button>
 </div>
 
 <div class="screen" id="sGame">
-  <h1 style="color:#fff;font-size:22px;">🏙️ The PHARR Way Path Game</h1>
+  <h1 style="color:#fff;font-size:22px;">🏙️ El Juego Manera Pharr</h1>
   <div class="board-wrap" id="boardWrap">
     <img class="board-img" src="https://torres1030.github.io/pharr-way-path-game/Pharr%20Way%20Board%20Game%20Map.png" alt="The PHARR Way game board">
   </div>
   <div class="teams-row" id="teamsRow"></div>
   <div class="q-panel">
-    <div class="qlbl">Current Question</div>
-    <div class="qnum" id="qNum">Question 1 of 12</div>
+    <div class="qlbl">Pregunta</div>
+    <div class="qnum" id="qNum">Pregunta 1 de 12</div>
     <div class="qtxt" id="qTxt"></div>
     <div class="qans" id="qAns"></div>
     <div class="qbtns">
-      <button class="btn-reveal" onclick="revealAns()">Show Answer Key</button>
-      <button class="btn-next"   onclick="nextQ()">Next Question →</button>
-      <button class="btn-back"   onclick="goSetup()">↩ New Game</button>
+      <button class="btn-reveal" onclick="revealAns()">Muestra la respuesta</button>
+      <button class="btn-next"   onclick="nextQ()">Siguiente pregunta →</button>
+      <button class="btn-back"   onclick="goSetup()">↩ Nuevo juego</button>
     </div>
     <div class="prog"><div class="progf" id="progF" style="width:0%"></div></div>
   </div>
   <div class="win-banner" id="winBanner">
-    <h2>🏆 We Have a Winner!</h2>
+    <h2>🏆 Tenemos un ganador!</h2>
     <div class="win-chars" id="winChars"></div>
     <p id="winTxt"></p>
-    <p style="margin-top:10px;font-size:13px;opacity:.8;">"When one team wins — <strong>WE ALL WIN</strong>. That is the Pharr Way."</p>
-    <button class="btn-next" style="margin-top:14px;" onclick="goSetup()">Play Again</button>
+    <p style="margin-top:10px;font-size:13px;opacity:.8;">"Cuando un jugador o equipo gana — <strong>TODOS GANAMOS</strong>. Eso es la Manera Pharr."</p>
+    <button class="btn-next" style="margin-top:14px;" onclick="goSetup()">Juega Otra Vez</button>
   </div>
 </div>
 
@@ -146,18 +146,18 @@ const TOTAL = WAYPOINTS.length - 1;
 const OFFSETS = [[-26,-2],[26,-2],[-10,-20],[10,-20],[-28,-18],[28,-18],[0,-30],[0,-8]];
 
 const Qs = [
-  { q:"What are the Three P's?",                                          a:"People, Process, and Performance" },
-  { q:"How do we improve our processes?",                                 a:"STEP" },
-  { q:"What is the City of Pharr's Mission?",                             a:"To provide the highest level of municipal services every day." },
-  { q:"What is the City of Pharr's Vision?",                              a:"The City of Pharr will consistently lead the region in municipal excellence, sustainability, and innovation." },
-  { q:"What does the P in PRIDE stand for?",                              a:"Professionalism" },
-  { q:"What does the I in PRIDE stand for?",                              a:"Integrity" },
-  { q:"What does the E in PRIDE stand for?",                              a:"Ethics" },
-  { q:"What does the S in STEP stand for?",                               a:"Study the problem" },
-  { q:"What does the P in STEP stand for?",                               a:"Propose solutions" },
-  { q:"Who are the City's Key Customers?",                                a:"Residents" },
-  { q:"In one word, what does 'Team Pharr' represent in the workplace?",  a:"Teamwork. Collaboration. Unity" },
-  { q:"What is our commitment?",                                          a:"Excellence Every Day" },
+  { q:"Que es la Manera Pharr? O las Tres Ps?",                                          a:"Personas, Procesos y Desempeno" },
+  { q:"Como mejoramos nuestros procesos?",                                 a:"PASO" },
+  { q:"Cual es la mision de la Ciudad de Pharr?",                             a:"Proporcionar un estandar de excelencia municipal cada dia" },
+  { q:"Cual es la vision de la Ciudad de Pharr?",                              a:"La Ciudad de Pharr constantemente lidera la region en excelencia municipal, sostenibilidad e innovacion" },
+  { q:"Que representa la P en nuestros valores PRIDE?",                              a:"Profesionalismo" },
+  { q:"Que representa la I en nuestros valores PRIDE?",                              a:"Integridad" },
+  { q:"Que representa la E en nuestros valores PRIDE?",                              a:"Etica" },
+  { q:"Que representa la P en PASO?",                               a:"Piensa en el problema" },
+  { q:"Que representa la O en PASO?",                               a:"Ofrecer soluciones" },
+  { q:"Quienes son los clientes claves de la Ciudad?",                                a:"Residentes" },
+  { q:"En una palabra, que representa el Equipo Pharr en el lugar del trabajo?",  a:"Colaboracion" },
+  { q:"Cual es el compromiso diario de la Ciudad de Pharr?",                                          a:"Excelencia Cada Dia" },
 ];
 
 let numP=2, sel={}, positions=[], answered=[], curQ=0, gameOver=false, active=[];
