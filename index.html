@@ -283,7 +283,7 @@ function mark(i,correct){
 function showWin(ws){
   const b=document.getElementById('winBanner');
   document.getElementById('winChars').innerHTML=ws.map(i=>`<img src="${active[i].img}" alt="${active[i].name}">`).join('');
-  document.getElementById('winTxt').textContent=`🎉 ${ws.map(i=>active[i].name).join(' & ')} reached the finish line! Congratulations!`;
+  document.getElementById('winTxt').textContent=`🎉 ${ws.map(i=>active[i].name).join(' & ')} llegaron a la meta! Felicidades!`;
   b.style.display='block';b.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 
